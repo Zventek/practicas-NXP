@@ -46,14 +46,14 @@ void setupLEDs() {
     uCOutputAdapter_PinBegin(&led_pins[3], PIN_LED_4);
 }
 void shiftLEDs() {
-    // Enciende los LEDs de izquierda a derecha
+    // Enciende los Leds de izquierda a derecha
     for (int i = 0; i < LED_COUNT; i++) {
         uCOutputAdapter_PinSet(&led_pins[i]);
         uCTimer_delay_wait(100U); 
         uCOutputAdapter_PinClear(&led_pins[i]);
     }
 
-    // Enciende los LEDs de derecha a izquierda
+    // Enciende los Leds de derecha a izquierda
     for (int i = LED_COUNT - 1; i >= 0; i--) {
         uCOutputAdapter_PinSet(&led_pins[i]);
         uCTimer_delay_wait(100U); 
@@ -81,6 +81,6 @@ int main(void)
 
     while (1)
     {
-    	shiftLEDs(); // Realiza el corrimiento de LEDs
+    	shiftLEDs();
     }
 }
