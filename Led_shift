@@ -1,0 +1,86 @@
+*
+ * Copyright 2019 NXP
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include "pin_mux.h"
+#include "board.h"
+
+#include "fsl_power.h"
+
+
+#include "../libraries/uc-framework/uC_config.h"
+#include "../libraries/uc-framework/uC_PinAdapter/uC_PinAdapter.h"
+#include "../libraries/uc-framework/uC_OutputAdapter/uC_OutputAdapter.h"
+#include "../libraries/uc-framework/uC_GPIO_pins_LPC55S28.h"
+#include "../libraries/uc-framework/uC_timer/uC_timer.h"
+/*******************************************************************************
+ * Definitions
+ ******************************************************************************/
+
+#define LED_COUNT 4
+#define PIN_LED_1 24
+#define PIN_LED_2 40
+#define PIN_LED_3 1
+#define PIN_LED_4 10
+/*******************************************************************************
+ * Prototypes
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+volatile uint32_t g_systickCounter;
+//OUTPUT_ADAPTER_PIN pin_led_01;
+OUTPUT_ADAPTER_PIN led_pins[LED_COUNT];
+/*******************************************************************************
+ * Code
+ ******************************************************************************/
+void setupLEDs() {
+    // Inicializa los pines de los LEDs
+    uCOutputAdapter_PinBegin(&led_pins[0], PIN_LED_1);
+    uCOutputAdapter_PinBegin(&led_pins[1], PIN_LED_2);
+    uCOutputAdapter_PinBegin(&led_pins[2], PIN_LED_3);
+    uCOutputAdapter_PinBegin(&led_pins[3], PIN_LED_4);
+}
+void shiftLEDs() {
+    // Enciende los LEDs de izquierda a derecha
+    for (int i = 0; i < LED_COUNT; i++) {
+        uCOutputAdapter_PinSet(&led_pins[i]);
+        uCTimer_delay_wait(100U); // Espera 500 ms
+        uCOutputAdapter_PinClear(&led_pins[i]);
+    }
+
+    // Enciende los LEDs de derecha a izquierda
+    for (int i = LED_COUNT - 1; i >= 0; i--) {
+        uCOutputAdapter_PinSet(&led_pins[i]);
+        uCTimer_delay_wait(100U); // Espera 500 ms
+        uCOutputAdapter_PinClear(&led_pins[i]);
+    }
+}
+
+int main(void)
+{
+    /* Init output LED GPIO. */
+    //GPIO_PortInit(GPIO, BOARD_LED_PORT);
+    /* Board pin init */
+    /* set BOD VBAT level to 1.65V */
+    POWER_SetBodVbatLevel(kPOWER_BodVbatLevel1650mv, kPOWER_BodHystLevel50mv, false);
+    BOARD_InitBootPins();
+    SystemCoreClockUpdate();
+#if !defined(DONT_ENABLE_FLASH_PREFETCH)
+    /* enable flash prefetch for better performance */
+    SYSCON->FMCCR |= SYSCON_FMCCR_PREFEN_MASK;
+#endif
+
+    uCTimer_Begin();
+    setupLEDs();
+
+
+    while (1)
+    {
+    	shiftLEDs(); // Realiza el corrimiento de LEDs
+    }
+}
